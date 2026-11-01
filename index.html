@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="theme-color" content="#17212b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon.svg">
+<title>ClawdGram</title>
+<style>
+:root{--bg:#0e1621;--side:#17212b;--panel:#1f2d3b;--me:#2b5278;--other:#182533;--fg:#f5f5f5;--muted:#7f91a4;--acc:#5eb5f7;--green:#4fcf70;--red:#ec6a6a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button,input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex:none;user-select:none}
+/* вход */
+#login{height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--side);border-radius:18px;padding:26px 22px;width:100%;max-width:380px}
+.card h1{margin:0 0 2px;text-align:center;color:var(--acc);font-size:28px}
+.card p.sub{margin:0 0 18px;text-align:center;color:var(--muted)}
+label{display:block;color:var(--muted);font-size:13px;margin:10px 0 4px}
+input,textarea{width:100%;background:var(--panel);border:0;border-radius:10px;padding:12px;outline:none}
+.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer;background:var(--panel)}
+.btn.pri{background:var(--acc);color:#0e1621}
+.btn:disabled{opacity:.5}
+.row2{display:flex;gap:10px;margin-top:16px}.row2 .btn{flex:1}
+.err{color:var(--red);min-height:20px;margin-top:10px;font-size:14px;text-align:center}
+/* приложение */
+#app{height:100%;height:100dvh;display:flex}
+aside{width:340px;background:var(--side);display:flex;flex-direction:column;border-right:1px solid #0b121a;min-width:0}
+main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+.top{display:flex;align-items:center;gap:10px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+.top .who{flex:1;min-width:0}
+.top .who b,.title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.small{font-size:13px;color:var(--muted)}
+.icon{background:none;border:0;font-size:22px;padding:6px 8px;cursor:pointer;border-radius:8px}
+.icon:active{background:var(--panel)}
+.search{padding:0 12px 8px}
+.search input{border-radius:20px;padding:10px 14px}
+#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.item{display:flex;gap:12px;align-items:center;padding:10px 14px;cursor:pointer}
+.item:active,.item.sel{background:var(--panel)}
+.item .mid{flex:1;min-width:0}
+.item .title{font-weight:600}
+.item .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:14px}
+.item .right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12px;color:var(--muted)}
+.badge{background:var(--acc);color:#0e1621;border-radius:12px;min-width:22px;padding:1px 7px;font-weight:700;text-align:center}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--green)}
+.empty{padding:30px 20px;text-align:center;color:var(--muted)}
+/* чат */
+.head{display:flex;align-items:center;gap:10px;background:var(--side);padding:8px 10px;padding-top:max(8px,env(safe-area-inset-top));min-height:58px}
+.head .mid{flex:1;min-width:0}
+#back{display:none}
+#msgs{flex:1;overflow-y:auto;padding:8px 10px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+.hint{margin:auto;color:var(--muted);text-align:center;padding:20px}
+.m{max-width:80%;padding:7px 11px 5px;border-radius:14px;margin-top:2px;word-wrap:break-word;overflow-wrap:anywhere;cursor:pointer}
+.m.me{align-self:flex-end;background:var(--me);border-bottom-right-radius:4px}
+.m.other{align-self:flex-start;background:var(--other);border-bottom-left-radius:4px}
+.m.first{margin-top:8px}
+.m .n{font-size:13px;font-weight:700;color:var(--acc)}
+.m .t{white-space:pre-wrap}
+.m .time{font-size:11px;color:#9db3c8;text-align:right;margin-top:1px}
+.compose{display:flex;gap:8px;align-items:flex-end;background:var(--side);padding:8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+.compose textarea{flex:1;max-height:130px;resize:none;border-radius:20px;padding:10px 14px;line-height:1.3}
+.send{background:var(--acc);color:#0e1621;border:0;border-radius:50%;width:44px;height:44px;font-size:20px;flex:none;cursor:pointer}
+#noChat{margin:auto;color:var(--muted);text-align:center;padding:20px}
+.conn{background:#7a3b3b;text-align:center;padding:4px;font-size:13px}
+/* модалки */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
+#modal .box{background:var(--side);border-radius:18px;padding:22px;width:100%;max-width:380px;max-height:92dvh;overflow-y:auto}
+#modal.sheet{align-items:flex-end}
+#modal.sheet .box{padding:8px;max-width:500px}
+#modal.sheet .btn{display:block;width:100%;margin:6px 0;background:var(--panel)}
+.center{text-align:center}
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0}
+.tag{background:var(--panel);color:var(--acc);border-radius:14px;padding:3px 10px;cursor:pointer;font-size:14px}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#000c;padding:8px 14px;border-radius:14px;z-index:20;font-size:14px;max-width:90%}
+/* телефон: один экран за раз */
+@media(max-width:720px){
+ aside{width:100%;border:0}
+ #app.inchat aside{display:none}
+ #app:not(.inchat) main{display:none}
+ #back{display:block}
+}
+</style>
+</head>
+<body>
+
+<div id="login" hidden>
+ <div class="card">
+  <h1>✈ ClawdGram</h1>
+  <p class="sub">Мессенджер для своих</p>
+  <label>Ник (латиница, цифры, _)</label><input id="lNick" autocapitalize="none" autocomplete="username" autocorrect="off" spellcheck="false">
+  <label>Пароль</label><input id="lPwd" type="password" autocomplete="current-password">
+  <label>Имя (только при регистрации)</label><input id="lName" autocomplete="nickname">
+  <div class="err" id="lErr"></div>
+  <div class="row2"><button class="btn pri" id="bLogin" disabled>Войти</button><button class="btn" id="bReg" disabled>Регистрация</button></div>
+ </div>
+</div>
+
+<div id="app" hidden>
+ <aside>
+  <div class="top"><div id="meAv"></div><div class="who"><b id="meName"></b><span class="small" id="meNick"></span></div><button class="icon" id="bSettings" title="Профиль">⚙️</button></div>
+  <div class="search"><input id="q" placeholder="Поиск: ник, имя или #тег" autocapitalize="none" autocomplete="off" spellcheck="false"></div>
+  <div id="list"></div>
+ </aside>
+ <main>
+  <div class="conn" id="conn" hidden>Нет соединения, переподключаюсь…</div>
+  <div id="noChat">Выбери чат или найди друга по нику ✈</div>
+  <div id="chatBox" hidden style="display:flex;flex-direction:column;flex:1;min-height:0">
+   <div class="head"><button class="icon" id="back">←</button><div id="hAv"></div><div class="mid"><b class="title" id="hTitle"></b><span class="small" id="hSub"></span></div><button class="icon" id="bProf" title="Профиль">ⓘ</button></div>
+   <div id="msgs"></div>
+   <div class="compose"><button class="icon" id="bEmoji">😊</button><textarea id="input" rows="1" placeholder="Сообщение"></textarea><button class="send" id="bSend">➤</button></div>
+  </div>
+ </main>
+</div>
+
+<div id="modal" hidden><div class="box" id="box"></div></div>
+
+<script>
+"use strict";
+const GENERAL = "#general";
+const EMOJI = "😀 😂 😍 😎 😭 😡 👍 👎 🙏 🔥 ❤️ 🎮 ⛏️ 💀 🤔 😴 🎉 👀 💯 ✅".split(" ");
+const $ = s => document.querySelector(s);
+const isTouch = matchMedia("(pointer:coarse)").matches;
+let ws, rid = 0, cbs = {}, retry = 0, wantOnline = true;
+let me = null, chats = {}, cache = {}, cur = null, mode = "chats", searchRows = [];
+let names = {}, typingTimer = null, lastTyping = 0, searchTimer = null, subText = "";
+
+/* ---------- утилиты ---------- */
+function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function fmtTime(ts) { return new Date(ts * 1000).toLocaleTimeString("ru-RU", {hour: "2-digit", minute: "2-digit"}); }
+function fmtSeen(p) {
+  if (p.online) return "в сети";
+  if (!p.last_seen) return "не в сети";
+  const d = new Date(p.last_seen * 1000);
+  const same = d.toDateString() === new Date().toDateString();
+  return "был(а) " + (same ? "в " : d.toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"}) + " в ") + fmtTime(p.last_seen);
+}
+function avatar(p, size) {
+  const a = h("div", "av", Array.from(p.name || p.nick || "?")[0].toUpperCase());
+  a.style.cssText = `width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px;background:${p.color || "#65aadd"}`;
+  return a;
+}
+function toast(t) {
+  const e = $("#toast") || document.body.appendChild(Object.assign(h("div"), {id: "toast"}));
+  e.textContent = t; e.hidden = false;
+  clearTimeout(e._t); e._t = setTimeout(() => e.hidden = true, 2800);
+}
+
+/* ---------- соединение ---------- */
+function connect() {
+  ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host);
+  ws.onopen = () => { retry = 0; onOpen(); };
+  ws.onmessage = e => {
+    let m; try { m = JSON.parse(e.data); } catch { return; }
+    if (m.rid !== undefined && !m.ev) { const cb = cbs[m.rid]; delete cbs[m.rid]; cb && cb(m); }
+    else handleEvent(m);
+  };
+  ws.onclose = () => {
+    for (const k in cbs) cbs[k]({ok: false, error: "Нет соединения"});
+    cbs = {};
+    $("#bLogin").disabled = $("#bReg").disabled = true;
+    if (me) $("#conn").hidden = false;
+    if (wantOnline) setTimeout(connect, Math.min(1000 * 2 ** retry++, 8000));
+  };
+}
+function call(op, data = {}) {
+  return new Promise(res => {
+    if (!ws || ws.readyState !== 1) return res({ok: false, error: "Нет соединения"});
+    const id = ++rid; cbs[id] = res;
+    ws.send(JSON.stringify({op, rid: id, ...data}));
+  });
+}
+async function onOpen() {
+  $("#conn").hidden = true;
+  $("#bLogin").disabled = $("#bReg").disabled = false;
+  const token = localStorage.getItem("cg_token");
+  if (token) {
+    const r = await call("resume", {token});
+    if (r.ok) { me = r.profile; if ($("#app").hidden) showApp(); await loadChats(); if (cur) loadHistory(cur); return; }
+    if (r.error !== "Нет соединения") localStorage.removeItem("cg_token");
+  }
+  if (me) { me = null; }
+  showLogin();
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && (!ws || ws.readyState > 1)) { retry = 0; connect(); }
+});
+
+/* ---------- вход ---------- */
+function showLogin() { $("#app").hidden = true; $("#login").hidden = false; $("#lNick").value = localStorage.getItem("cg_nick") || ""; }
+async function auth(mode) {
+  const nick = $("#lNick").value.trim(), pwd = $("#lPwd").value;
+  if (!nick || !pwd) { $("#lErr").textContent = "Введи ник и пароль"; return; }
+  $("#lErr").textContent = "";
+  $("#bLogin").disabled = $("#bReg").disabled = true;
+  const r = await call(mode, {nick, password: pwd, name: $("#lName").value.trim()});
+  $("#bLogin").disabled = $("#bReg").disabled = false;
+  if (!r.ok) { $("#lErr").textContent = r.error; return; }
+  localStorage.setItem("cg_token", r.token); localStorage.setItem("cg_nick", nick);
+  me = r.profile; $("#lPwd").value = "";
+  showApp(); loadChats();
+}
+$("#bLogin").onclick = () => auth("login");
+$("#bReg").onclick = () => auth("register");
+$("#lPwd").addEventListener("keydown", e => { if (e.key === "Enter") auth("login"); });
+
+function showApp() {
+  $("#login").hidden = true; $("#app").hidden = false;
+  chats = {}; cache = {}; cur = null; mode = "chats"; $("#q").value = "";
+  $("#app").classList.remove("inchat");
+  $("#noChat").hidden = false; $("#chatBox").hidden = true;
+  drawTop();
+}
+function drawTop() {
+  const a = $("#meAv"); a.replaceChildren(avatar(me, 42));
+  $("#meName").textContent = me.name; $("#meNick").textContent = "@" + me.nick;
+}
+
+/* ---------- список чатов и поиск ---------- */
+async function loadChats() {
+  const r = await call("chats");
+  if (!r.ok) return;
+  const n = {};
+  r.chats.forEach(c => { n[c.key] = c; if (c.profile) names[c.key] = c.profile.name; });
+  if (cur && !n[cur] && chats[cur]) n[cur] = chats[cur];
+  if (cur && n[cur]) n[cur].unread = 0;
+  chats = n; if (mode === "chats") renderList();
+}
+function renderList() {
+  const list = $("#list"); list.replaceChildren();
+  let rows;
+  if (mode === "search") rows = searchRows;
+  else rows = Object.values(chats).sort((a, b) => (a.key === GENERAL ? -1 : 0) - (b.key === GENERAL ? -1 : 0) || ((b.last && b.last.id) || 0) - ((a.last && a.last.id) || 0));
+  if (!rows.length) list.append(h("div", "empty", mode === "search" ? "Ничего не найдено" : "Пока пусто"));
+  for (const c of rows) {
+    const p = c.kind === "room" ? {name: "📢", color: "#3d6a99"} : c.profile;
+    const it = h("div", "item" + (c.key === cur ? " sel" : ""));
+    it.append(avatar(p, 48));
+    const mid = h("div", "mid");
+    mid.append(h("span", "title", c.kind === "room" ? "Общий чат" : p.name));
+    let sub;
+    if (mode === "search") sub = "@" + p.nick + (p.tags.length ? " · " + p.tags.map(t => "#" + t).join(" ") : "");
+    else if (c.last) sub = (c.last.sender === me.nick ? "Ты: " : (c.kind === "room" ? c.last.sname + ": " : "")) + c.last.text;
+    else sub = c.kind === "room" ? "Здесь пишут все" : "Нет сообщений";
+    mid.append(h("span", "sub", sub));
+    it.append(mid);
+    const right = h("div", "right");
+    if (c.last && mode !== "search") right.append(h("span", "", fmtTime(c.last.ts)));
+    if (c.unread) right.append(h("span", "badge", c.unread));
+    else if (p.online) right.append(h("span", "dot"));
+    it.append(right);
+    it.onclick = () => pick(c);
+    list.append(it);
+  }
+  const total = Object.values(chats).reduce((s, c) => s + (c.unread || 0), 0);
+  document.title = "ClawdGram" + (total ? ` (${total})` : "");
+}
+function pick(c) {
+  if (mode === "search") { chats[c.key] = chats[c.key] || c; $("#q").value = ""; mode = "chats"; }
+  openChat(c.key);
+}
+$("#q").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(doSearch, 300); });
+async function doSearch() {
+  const q = $("#q").value.trim();
+  if (!q) { mode = "chats"; renderList(); return; }
+  const r = await call("search", {q});
+  if (!r.ok || q !== $("#q").value.trim()) return;
+  mode = "search";
+  searchRows = r.users.map(u => ({key: u.nick, kind: "dm", profile: u, unread: 0, last: null}));
+  renderList();
+}
+
+/* ---------- чат ---------- */
+function openChat(key) {
+  cur = key; chats[key].unread = 0;
+  $("#app").classList.add("inchat");
+  $("#noChat").hidden = true; $("#chatBox").hidden = false;
+  drawHeader(); renderMsgs(true); renderList();
+  loadHistory(key); call("read", {peer: key});
+  if (!isTouch) $("#input").focus();
+}
+async function loadHistory(key) {
+  const r = await call("history", {peer: key});
+  if (!r.ok) return;
+  cache[key] = r.messages; r.messages.forEach(m => names[m.sender] = m.sname);
+  if (cur === key) renderMsgs(true);
+}
+function drawHeader() {
+  const c = chats[cur]; if (!c) return;
+  const room = c.kind === "room";
+  $("#hAv").replaceChildren(avatar(room ? {name: "📢", color: "#3d6a99"} : c.profile, 40));
+  $("#hTitle").textContent = room ? "Общий чат" : c.profile.name;
+  subText = room ? "Здесь пишут все пользователи" : fmtSeen(c.profile);
+  setSub(subText);
+  $("#bProf").hidden = room;
+}
+function setSub(t, color) { const s = $("#hSub"); s.textContent = t; s.style.color = color || ""; }
+function renderMsgs(stick) {
+  const box = $("#msgs"), prev = box.scrollTop;
+  const near = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+  box.replaceChildren();
+  const list = cache[cur] || [];
+  if (!list.length) box.append(h("div", "hint", cache[cur] ? "Сообщений пока нет. Напиши первым!" : "Загрузка…"));
+  let lastSender = null, lastTs = 0;
+  const room = cur === GENERAL;
+  for (const m of list) {
+    const mine = m.sender === me.nick;
+    const first = m.sender !== lastSender || m.ts - lastTs > 300;
+    const d = h("div", "m " + (mine ? "me" : "other") + (first ? " first" : ""));
+    if (first && room && !mine) d.append(h("div", "n", m.sname));
+    d.append(h("div", "t", m.text), h("div", "time", fmtTime(m.ts)));
+    d.onclick = () => msgSheet(m);
+    box.append(d);
+    lastSender = m.sender; lastTs = m.ts;
+  }
+  if (stick || near) box.scrollTop = box.scrollHeight; else box.scrollTop = prev;
+}
+function convKey(m) { return m.to === GENERAL ? GENERAL : (m.sender === me.nick ? m.to : m.sender); }
+function addMsg(m) {
+  const key = convKey(m), mine = m.sender === me.nick;
+  names[m.sender] = m.sname;
+  const lst = cache[key];
+  if (lst && !lst.some(x => x.id === m.id)) lst.push(m);
+  if (chats[key]) {
+    chats[key].last = m;
+    chats[key].unread = (cur === key || mine) ? 0 : (chats[key].unread || 0) + 1;
+  } else loadChats();
+  if (cur === key) { renderMsgs(mine); if (!mine) call("read", {peer: key}); }
+  else if (!mine && navigator.vibrate) navigator.vibrate(60);
+  if (mode === "chats") renderList();
+}
+async function sendMsg() {
+  const ta = $("#input"), text = ta.value.trim();
+  if (!text || !cur) return;
+  ta.value = ""; autosize();
+  const r = await call("send", {to: cur, text});
+  if (r.ok) addMsg(r.msg); else { toast(r.error); ta.value = text; autosize(); }
+}
+function autosize() { const t = $("#input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 130) + "px"; }
+$("#input").addEventListener("input", () => {
+  autosize();
+  const now = Date.now();
+  if (cur && now - lastTyping > 2500) { lastTyping = now; call("typing", {to: cur}); }
+});
+$("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !isTouch) { e.preventDefault(); sendMsg(); } });
+$("#bSend").addEventListener("mousedown", e => e.preventDefault());
+$("#bSend").onclick = sendMsg;
+$("#back").onclick = () => { $("#app").classList.remove("inchat"); cur = null; renderList(); };
+$("#bProf").onclick = () => showProfile(cur);
+$("#bSettings").onclick = editProfile;
+$("#bEmoji").onclick = () => {
+  openModal(true, box => {
+    const g = h("div", "center");
+    EMOJI.forEach(em => { const b = h("button", "icon", em); b.style.fontSize = "28px"; b.onclick = () => { $("#input").value += em; closeModal(); $("#input").focus(); }; g.append(b); });
+    box.append(g);
+  });
+};
+
+/* ---------- события ---------- */
+function handleEvent(e) {
+  if (!me) return;
+  if (e.ev === "msg") addMsg(e.msg);
+  else if (e.ev === "deleted") {
+    const key = e.to === GENERAL ? GENERAL : (e.sender === me.nick ? e.to : e.sender);
+    if (cache[key]) { cache[key] = cache[key].filter(m => m.id !== e.id); if (cur === key) renderMsgs(false); }
+    loadChats();
+  } else if (e.ev === "typing") {
+    if ((e.to === GENERAL && cur === GENERAL) || (e.to !== GENERAL && e.from === cur)) {
+      setSub(e.to === GENERAL ? (names[e.from] || e.from) + " печатает…" : "печатает…", "var(--green)");
+      clearTimeout(typingTimer); typingTimer = setTimeout(() => setSub(subText), 4000);
+    }
+  } else if (e.ev === "presence") {
+    const c = chats[e.nick];
+    if (c && c.profile) { c.profile.online = e.online; c.profile.last_seen = e.last_seen; if (cur === e.nick) drawHeader(); if (mode === "chats") renderList(); }
+  } else if (e.ev === "profile") {
+    const p = e.profile; names[p.nick] = p.name;
+    const c = chats[p.nick];
+    if (c) { c.profile = p; if (cur === p.nick) drawHeader(); if (mode === "chats") renderList(); }
+  }
+}
+
+/* ---------- окна ---------- */
+function openModal(sheet, fill) {
+  const m = $("#modal"), box = $("#box");
+  box.replaceChildren(); m.classList.toggle("sheet", !!sheet); fill(box); m.hidden = false;
+}
+function closeModal() { $("#modal").hidden = true; }
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+function msgSheet(m) {
+  openModal(true, box => {
+    const c = h("button", "btn", "Копировать");
+    c.onclick = async () => { try { await navigator.clipboard.writeText(m.text); } catch { const t = h("textarea"); t.value = m.text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); } closeModal(); toast("Скопировано"); };
+    box.append(c);
+    if (m.sender === me.nick) {
+      const d = h("button", "btn", "Удалить"); d.style.color = "var(--red)";
+      d.onclick = async () => { closeModal(); const r = await call("delete", {id: m.id}); if (!r.ok) toast(r.error); };
+      box.append(d);
+    }
+    const x = h("button", "btn", "Отмена"); x.onclick = closeModal; box.append(x);
+  });
+}
+async function showProfile(nick) {
+  const r = await call("profile_get", {nick});
+  if (!r.ok) return toast(r.error);
+  const p = r.profile;
+  openModal(false, box => {
+    const c = h("div", "center");
+    const av = avatar(p, 84); av.style.margin = "0 auto 8px";
+    c.append(av, h("div", "", p.name), h("div", "small", "@" + p.nick));
+    c.firstChild.nextSibling.style.cssText = "font-size:20px;font-weight:700";
+    const seen = h("div", "small", fmtSeen(p)); if (p.online) seen.style.color = "var(--green)";
+    c.append(seen);
+    if (p.status) { const s = h("div", "", "«" + p.status + "»"); s.style.cssText = "margin:10px 0;font-style:italic"; c.append(s); }
+    if (p.bio) { const b = h("div", "small", p.bio); b.style.margin = "6px 0"; c.append(b); }
+    if (p.tags.length) {
+      const t = h("div", "tags");
+      p.tags.forEach(x => { const g = h("span", "tag", "#" + x); g.onclick = () => { closeModal(); $("#app").classList.remove("inchat"); cur = null; $("#q").value = "#" + x; doSearch(); }; t.append(g); });
+      c.append(t);
+    }
+    c.append(h("div", "small", "Регистрация: " + new Date((p.created || 0) * 1000).toLocaleDateString("ru-RU")));
+    box.append(c);
+  });
+}
+function editProfile() {
+  openModal(false, box => {
+    const f = (label, el) => { box.append(h("label", "", label), el); return el; };
+    const mk = (v) => { const i = h("input"); i.value = v; return i; };
+    const name = f("Имя", mk(me.name)), status = f("Статус", mk(me.status));
+    const bio = f("О себе", h("textarea")); bio.rows = 3; bio.value = me.bio;
+    const tags = f("Теги через запятую (до 5)", mk(me.tags.join(", ")));
+    const col = h("input"); col.type = "color"; col.value = me.color; col.style.cssText = "height:44px;padding:4px";
+    f("Цвет аватарки", col);
+    const err = h("div", "err"); box.append(err);
+    const row = h("div", "row2");
+    const save = h("button", "btn pri", "Сохранить");
+    save.onclick = async () => {
+      const r = await call("profile_update", {name: name.value, status: status.value, bio: bio.value, tags: tags.value, color: col.value});
+      if (!r.ok) { err.textContent = r.error; return; }
+      me = r.profile; drawTop(); closeModal();
+    };
+    const out = h("button", "btn", "Выйти"); out.style.color = "var(--red)";
+    out.onclick = async () => {
+      await call("logout", {token: localStorage.getItem("cg_token") || ""});
+      localStorage.removeItem("cg_token"); me = null; closeModal(); showLogin();
+      wantOnline = false; ws.close(); setTimeout(() => { wantOnline = true; retry = 0; connect(); }, 300);
+    };
+    row.append(save, out); box.append(row);
+  });
+}
+
+connect();
+</script>
+</body>
+</html>
